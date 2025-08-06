@@ -1,103 +1,218 @@
-import Image from "next/image";
+"use client";
+import { useState, useRef } from "react";
+import Webcam from "react-webcam";
+
+const iconCamera = (
+  <div className="flex items-center justify-center mb-4">
+    <div className="rounded-full bg-[#23272f] p-6">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+        <path d="M7 7V6a2 2 0 012-2h6a2 2 0 012 2v1" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <rect x="3" y="7" width="18" height="14" rx="3" stroke="#a78bfa" strokeWidth="2"/>
+        <circle cx="12" cy="14" r="3" stroke="#a78bfa" strokeWidth="2"/>
+      </svg>
+    </div>
+  </div>
+);
+
+const iconUpload = (
+  <div className="flex items-center justify-center mb-4">
+    <div className="rounded-full bg-[#23272f] p-6">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+        <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <rect x="4" y="16" width="16" height="4" rx="2" stroke="#4ade80" strokeWidth="2"/>
+      </svg>
+    </div>
+  </div>
+);
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [image, setImage] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
+  const [description, setDescription] = useState<string | null>(null);
+  const [descLoading, setDescLoading] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
+  const productSectionRef = useRef<HTMLDivElement>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    setShowWebcam(false);
+    setResult(null);
+    setDescription(null);
+    setTimeout(() => {
+      productSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  };
+
+  const handleCapture = () => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      setImage(imageSrc);
+      setShowWebcam(false);
+      setResult(null);
+      setDescription(null);
+      setTimeout(() => {
+        productSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  };
+
+  // Modified: Classify and get description together
+  const handleSubmit = async () => {
+    if (!image) return;
+    setLoading(true);
+    setResult(null);
+    setDescription(null);
+    // First, classify image
+    const res = await fetch("/api/classify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image }),
+    });
+    const resultData = await res.json();
+    setResult(resultData);
+    setLoading(false);
+
+    // Then, get description automatically
+    if (resultData?.display_name && resultData?.specific_category) {
+      setDescLoading(true);
+      const descRes = await fetch("/api/describe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          display_name: resultData.display_name,
+          specific_category: resultData.specific_category,
+        }),
+      });
+      const descData = await descRes.json();
+      setDescription(descData.description);
+      setDescLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setImage(null);
+    setResult(null);
+    setDescription(null);
+    setShowWebcam(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#181a20] flex flex-col items-center py-10 px-2">
+      <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+        {/* Take a Photo Box */}
+        <div className="bg-[#23272f] rounded-2xl shadow-lg p-8 flex-1 flex flex-col items-center border border-[#23272f]">
+          {iconCamera}
+          <h2 className="text-2xl font-bold mb-2 text-center text-[#a78bfa]">Take a Photo</h2>
+          <p className="text-gray-400 mb-6 text-center">
+            Use your camera to capture a product you want to find
+          </p>
+          {!showWebcam && (
+            <button
+              onClick={() => { handleClear(); setShowWebcam(true); }}
+              className="w-full bg-[#181a20] hover:bg-[#312e81] text-gray-100 font-semibold py-3 rounded-lg transition mb-2"
+            >
+              Open Camera
+            </button>
+          )}
+          {showWebcam && (
+            <div className="flex flex-col items-center gap-3 w-full mb-2">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                className="rounded-lg border border-gray-600 bg-black"
+                width={300}
+                height={225}
+                videoConstraints={{ facingMode: "environment" }}
+              />
+              <button
+                onClick={handleCapture}
+                className="w-full bg-[#a78bfa] hover:bg-[#c4b5fd] text-[#181a20] font-semibold py-2 rounded transition"
+              >
+                Capture Photo
+              </button>
+              <button
+                onClick={() => setShowWebcam(false)}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-2 rounded transition"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Upload Photo Box */}
+        <div className="bg-[#23272f] rounded-2xl shadow-lg p-8 flex-1 flex flex-col items-center border border-[#23272f]">
+          {iconUpload}
+          <h2 className="text-2xl font-bold mb-2 text-center text-[#4ade80]">Upload Photo</h2>
+          <p className="text-gray-400 mb-6 text-center">
+            Choose an existing photo from your device
+          </p>
+          <label className="w-full">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <div className="w-full bg-[#181a20] border border-gray-600 text-gray-100 text-center font-semibold py-3 rounded-lg cursor-pointer hover:bg-gray-700 transition">
+              Choose File
+            </div>
+          </label>
+        </div>
+      </div>
+      {/* PRODUCT INFO SECTION */}
+      <div ref={productSectionRef} className="w-full max-w-2xl mt-12">
+        {(image || loading || result) && (
+          <div className="bg-[#23272f] rounded-xl shadow-xl p-6 border border-gray-700 flex flex-col items-center">
+            {image && (
+              <img src={image} alt="Preview" className="max-h-48 rounded-lg mb-4 border border-gray-700" />
+            )}
+            {image && (
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full bg-[#a78bfa] hover:bg-[#c4b5fd] text-[#181a20] font-semibold py-2 px-4 rounded transition disabled:opacity-50 mb-2"
+              >
+                {loading ? "Classifying & getting description..." : "Classify Image"}
+              </button>
+            )}
+            {result && (
+              <div className="bg-[#181a20] rounded-lg p-4 w-full mt-2 border border-gray-700">
+                <h2 className="text-lg font-semibold mb-2 text-[#a78bfa]">Classification Result</h2>
+                <pre className="text-sm text-gray-300 overflow-x-auto">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+                {descLoading && (
+                  <div className="mt-4 text-gray-100 bg-gray-800 p-4 rounded">
+                    Loading product description...
+                  </div>
+                )}
+                {description && (
+                  <div className="mt-4 text-gray-100 bg-gray-800 p-4 rounded">
+                    <h3 className="font-bold mb-1">Product Description</h3>
+                    <p>{description}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {(image || result) && (
+              <button
+                onClick={handleClear}
+                className="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-2 px-4 rounded transition"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
