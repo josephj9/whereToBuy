@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import NavButton from '@/app/components/navButton';
 
 const iconCamera = (
   <div className="flex items-center justify-center mb-4">
@@ -32,6 +33,7 @@ export default function Home() {
   const [showWebcam, setShowWebcam] = useState(false);
   const [description, setDescription] = useState<string | null>(null);
   const [descLoading, setDescLoading] = useState(false);
+  const [products, setProducts] = useState([]);
   const webcamRef = useRef<Webcam>(null);
   const productSectionRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +64,7 @@ export default function Home() {
     }
   };
 
+  //PUT THIS PART INTO A DATABASE
   // Modified: Classify and get description together
   const handleSubmit = async () => {
     if (!image) return;
@@ -95,6 +98,13 @@ export default function Home() {
     }
   };
 
+  const fetchProducts = async () => {
+    const request = await fetch('api/products');  
+    const data = await request.json();
+    setProducts(data.data);
+  }
+
+
   const handleClear = () => {
     setImage(null);
     setResult(null);
@@ -104,6 +114,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#181a20] flex flex-col items-center py-10 px-2">
+      {/* SHOW ALL PRODUCTS BUTTON */}
+      <NavButton />
+      {/* <div><button onClick={showProducts}></button></div> */}
       <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
         {/* Take a Photo Box */}
         <div className="bg-[#23272f] rounded-2xl shadow-lg p-8 flex-1 flex flex-col items-center border border-[#23272f]">
