@@ -33,7 +33,6 @@ export default function Home() {
   const [showWebcam, setShowWebcam] = useState(false);
   const [description, setDescription] = useState<string | null>(null);
   const [descLoading, setDescLoading] = useState(false);
-  const [products, setProducts] = useState([]);
   const webcamRef = useRef<Webcam>(null);
   const productSectionRef = useRef<HTMLDivElement>(null);
 
@@ -98,11 +97,6 @@ export default function Home() {
     }
   };
 
-  const fetchProducts = async () => {
-    const request = await fetch('api/products');  
-    const data = await request.json();
-    setProducts(data.data);
-  }
 
 
   const handleClear = () => {
