@@ -4,6 +4,16 @@ import Webcam from "react-webcam";
 import NavButton from '@/app/components/navButton';
 import SearchButton from '@/app/components/searchButton';
 
+interface ClassificationResult {
+  main_category: string;
+  specific_category: string;
+  display_name: string;
+  confidence: string;
+  color: string;
+  icon: string;
+}
+
+
 const iconCamera = (
   <div className="flex items-center justify-center mb-4">
     <div className="rounded-full bg-[#23272f] p-6">
@@ -29,7 +39,7 @@ const iconUpload = (
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ClassificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
   const [description, setDescription] = useState<string | null>(null);

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/app/lib/mongodb'
 import Product from '@/app/models/Product'
 
-export async function GET(request) {
+export async function GET() {
     await connectDB();
       try {
         const items = await Product.find({});

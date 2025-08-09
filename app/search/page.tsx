@@ -24,7 +24,7 @@ export default function SearchPage() {
   const searchParams = useSearchParams()
   const displayName = searchParams.get("display_name")
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true) // Loading state managed within this component
+  const [isLoading, setIsLoading] = useState(true) 
 
   useEffect(() => {
     if (!displayName) {
@@ -56,11 +56,10 @@ return (
     <div className="min-h-screen bg-darkBackground text-white p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <ReturnButton /> {/* Using your ReturnButton component */}
+          <ReturnButton /> 
           <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-gradientPink via-gradientGreen to-gradientBlue text-transparent bg-clip-text flex-grow">
-            Search Results for "{displayName}"
+            Search Results for {displayName}
           </h1>
-          {/* Placeholder to balance the header if needed, or remove if not */}
           <div className="w-[150px]"></div>
         </div>
 
@@ -102,7 +101,7 @@ return (
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-400 text-lg">No products found for "{displayName}".</p>
+          <p className="text-center text-gray-400 text-lg">No products found for {displayName}.</p>
         )}
       </div>
     </div>
