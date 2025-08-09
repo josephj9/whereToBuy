@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import ReturnButton from "@/app/components/returnButton"
@@ -52,13 +53,13 @@ export default function SearchPage() {
     fetchResults()
   }, [displayName])
 
-return (
+  return (
     <div className="min-h-screen bg-darkBackground text-white p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <ReturnButton /> 
           <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-gradientPink via-gradientGreen to-gradientBlue text-transparent bg-clip-text flex-grow">
-            Search Results for {displayName}
+            Search Results for &quot;{displayName}&quot;
           </h1>
           <div className="w-[150px]"></div>
         </div>
@@ -101,7 +102,7 @@ return (
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-400 text-lg">No products found for {displayName}.</p>
+          <p className="text-center text-gray-400 text-lg">No products found for &quot;{displayName}&quot;.</p>
         )}
       </div>
     </div>
