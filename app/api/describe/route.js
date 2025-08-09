@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { connectDB } from '@/app/lib/mongodb'
 import Product from '@/app/models/Product'
-import mongoose from "mongoose";
 
 export async function POST(req) {
   const { display_name, specific_category } = await req.json();

@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "lucide-react": "^0.539.0",
     "mongoose": "^8.17.0",
     "next": "15.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-webcam": "^7.2.0"
+    "react-webcam": "^7.2.0",
+    "serpapi": "^2.2.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
