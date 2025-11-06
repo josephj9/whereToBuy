@@ -15,11 +15,11 @@ export async function POST(req) {
     const result = await model.generateContent(prompt);
     const description = result.response.text();
 
-    const newProduct = await Product.create({
-      name: display_name,
-      category: specific_category,
-      description: description
-    })
+    // const newProduct = await Product.create({
+    //   name: display_name,
+    //   category: specific_category,
+    //   description: description
+    // })
 
     return new Response(JSON.stringify({ description }), { status: 200 });
   } catch (err) {
